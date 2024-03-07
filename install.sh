@@ -1,26 +1,8 @@
 #!/usr/bin/env bash
-
 set -e
-
 prefix="$HOME/opt"
 [[ -d "$prefix" ]] || mkdir -p "$prefix"
-
-export CC=clang
-export CMAKE_INCLUDE_PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers
-export CMAKE_LIBRARY_PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Libraries
-export CMAKE_PREFIX_PATH="$prefix"
-export CXX=clang++
-export HOSTTYPE=arm64
-export LC_ALL=en_US.UTF-8
-export OBJC=clang
-export OBJCXX=clang++
-export OPENSSL_NO_VENDOR=1
-export PKG_CONFIG_LIBDIR=/usr/lib/pkgconfig
-export MACHTYPE=arm64-apple-darwin23
-export MAKEFLAGS=-j16
-export OSTYPE=darwin23
-
-cat <<-EOF > bash.sums
+[[ -f "./bash.sums" ]] || cat <<-EOF > "./bash.sums"
     c8e31bdc59b69aaffc5b36509905ba3e5cbb12747091d27b4b977f078560d5b8  bash-5.2.21.tar.gz
     78b5230a49594ec30811e72dcd0f56d1089710ec7828621022d08507aa57e470  bash52-022
     af905502e2106c8510ba2085aa2b56e64830fc0fdf6ee67ebb459ac11696dcd3  bash52-023
@@ -28,7 +10,6 @@ cat <<-EOF > bash.sums
     5138f487e7cf71a6323dc81d22419906f1535b89835cc2ff68847e1a35613075  bash52-025
     96ee1f549aa0b530521e36bdc0ba7661602cfaee409f7023cac744dd42852eac  bash52-026
 EOF
-
 [[ -f bash-5.2.21.tar.gz ]] || curl -L --fail https://ftp.gnu.org/gnu/bash/bash-5.2.21.tar.gz -o bash-5.2.21.tar.gz
 [[ -f bash52-022 ]] || curl -L --fail https://ftp.gnu.org/gnu/bash/bash-5.2-patches/bash52-022 -o bash52-022
 [[ -f bash52-023 ]] || curl -L --fail https://ftp.gnu.org/gnu/bash/bash-5.2-patches/bash52-023 -o bash52-023
@@ -36,7 +17,6 @@ EOF
 [[ -f bash52-025 ]] || curl -L --fail https://ftp.gnu.org/gnu/bash/bash-5.2-patches/bash52-025 -o bash52-025
 [[ -f bash52-026 ]] || curl -L --fail https://ftp.gnu.org/gnu/bash/bash-5.2-patches/bash52-026 -o bash52-026
 /usr/bin/shasum -a 256 -c bash.sums
-
 tar -xvzf ./bash-5.2.21.tar.gz
 cd bash-5.2.21/
 patch -g 0 -f -p0 -i ../bash52-022
@@ -44,10 +24,9 @@ patch -g 0 -f -p0 -i ../bash52-023
 patch -g 0 -f -p0 -i ../bash52-024
 patch -g 0 -f -p0 -i ../bash52-025
 patch -g 0 -f -p0 -i ../bash52-026
-
-./configure --prefix="$prefix" CFLAGS='-g -O2 -DSSH_SOURCE_BASHRC -Wno-deprecated-non-prototype -Wno-parentheses -Wno-format-security -Wno-pointer-to-int-cast -Wno-deprecated-declarations'
+./configure --prefix="$prefix"
+make
+make check
 make install
-
 cd ..
-[[ -d ./bash-5.2.21 ]] && rm -rf ./bash-5.2.21
-
+rm -rf ./bash-5.2.21
